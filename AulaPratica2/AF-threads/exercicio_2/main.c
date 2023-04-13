@@ -83,7 +83,7 @@ int main(int argc, char* argv[]) {
     data_to_sum_t data[a_size];
 
     // Divide o trabalho entre as threads
-    int chunk_size = a_size / n_threads;
+    int chunk_size = (a_size + n_threads - 1) / n_threads;
     int remainder = a_size % n_threads;
     int current = 0;
 
