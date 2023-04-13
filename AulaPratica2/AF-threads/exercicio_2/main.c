@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
 
     // Cria lista de threads e estrutura de dados para somar
     pthread_t threads[n_threads];
-    data_to_sum_t data[a_size];
+    data_to_sum_t data[n_threads];
 
     // Divide o trabalho entre as threads
     int chunk_size = (a_size + n_threads - 1) / n_threads;
@@ -90,7 +90,7 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < n_threads; ++i) {
         data[i].a = a;
         data[i].b = b;
-        data[i].result = malloc(sizeof(c));
+        data[i].result = malloc(a_size * sizeof(double));
 
         data[i].start = current;
         current += chunk_size;
