@@ -24,13 +24,13 @@ typedef struct {
     int fim;
     double* a;
     double* b;
-    double* c;
+    double* resultado;
 } data_to_sum_t;
 
 void* soma_vetores(void* arg) {
     data_to_sum_t *data = (data_to_sum_t*) arg;
     for (int i = data->inicio; i < data->fim; i++) {
-        data->c[i] = data->a[i] + data->b[i];
+        data->resultado[i] = data->a[i] + data->b[i];
     }
     return NULL;
 }
@@ -79,19 +79,19 @@ int main(int argc, char* argv[]) {
 
     pthread_t threads[n_threads];
     data_to_sum_t data[a_size];
-    data->a = a;
-    data->b = b;
-    data->c = c;
-
     // Divide o trabalho entre as threads
     int iteracoes = a_size / n_threads;
     int resto = a_size % n_threads;
-    int current = 0;
+    int i_atual = 0;
 
     for (int i = 0; i < n_threads; ++i) {
-        data[i].inicio = current;
-        current += iteracoes;
-        data[i].fim = current;
+        data[i].a = a;
+        data[i].b = b;
+        data[i].resultado = malloc(a_size*sizeof(double));
+
+        data[i].inicio = i_atual;
+        i_atual += iteracoes;
+        data[i].fim = i_atual;
 
         // Adiciona o restante aos últimos threads
         if (resto && i >= n_threads - resto) {
@@ -103,10 +103,13 @@ int main(int argc, char* argv[]) {
     }
 
     for (int i = 0; i < n_threads; ++i)
-        // c += data[i].c; falta adicionar uma lógica para setar os valores de "c" a partir de data[i].c
-
-    for (int i = 0; i < n_threads; ++i)
         pthread_join(threads[i], NULL);
+
+    for (int i = 0; i < n_threads; i++) {
+        for (int j = data[i].inicio; j < data[i].fim; j++) {
+            c[j] = data[i].resultado[j - data[i].inicio];
+        }
+    }
 
     //    +---------------------------------+
     // ** | IMPORTANTE: avalia o resultado! | **
