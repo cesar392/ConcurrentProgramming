@@ -110,7 +110,7 @@ int main(int argc, char* argv[]) {
 
     for (int i = 0; i < n_threads; i++) {
         for (int j = data[i].start; j < data[i].end; j++) {
-            c[j] = data[i].result[j - data[i].start];
+            c[j] = data[i].result[j];
         }
     }
 
