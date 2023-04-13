@@ -20,17 +20,17 @@ double* load_vector(const char* filename, int* out_size);
 void avaliar(double* a, double* b, double* c, int size);
 
 typedef struct {
-    int inicio;
-    int fim;
+    int start;
+    int end;
     double* a;
     double* b;
-    double* resultado;
+    double* result;
 } data_to_sum_t;
 
-void* soma_vetores(void* arg) {
+void* sum_vector(void* arg) {
     data_to_sum_t *data = (data_to_sum_t*) arg;
-    for (int i = data->inicio; i < data->fim; i++) {
-        data->resultado[i] = data->a[i] + data->b[i];
+    for (int i = data->start; i < data->end; i++) {
+        data->result[i] = data->a[i] + data->b[i];
     }
     return NULL;
 }
@@ -74,53 +74,49 @@ int main(int argc, char* argv[]) {
         printf("Vetores a e b tem tamanhos diferentes! (%d != %d)\n", a_size, b_size);
         return 1;
     }
-    //Cria vetor do resultado 
+    //Cria vetor do resultado vazio
     double* c = malloc(a_size*sizeof(double));
 
+    // Cria lista de threads e estrutura de dados para somar
     pthread_t threads[n_threads];
     data_to_sum_t data[a_size];
+
     // Divide o trabalho entre as threads
-    int iteracoes = a_size / n_threads;
-    int resto = a_size % n_threads;
-    int i_atual = 0;
+    int chunk_size = a_size / n_threads;
+    int remainder = a_size % n_threads;
+    int current = 0;
 
     for (int i = 0; i < n_threads; ++i) {
         data[i].a = a;
         data[i].b = b;
-        data[i].resultado = malloc(a_size*sizeof(double));
+        data[i].result = malloc(a_size*sizeof(double));
 
-        data[i].inicio = i_atual;
-        i_atual += iteracoes;
-        data[i].fim = i_atual;
+        data[i].start = current;
+        current += chunk_size;
+        data[i].end = current;
 
         // Adiciona o restante aos últimos threads
-        if (resto && i >= n_threads - resto) {
-            data[i].fim++;
-            resto--;
+        if (remainder && i >= n_threads - remainder) {
+            data[i].end++;
+            remainder--;
         }
 
-        pthread_create(&threads[i], NULL, soma_vetores, &data[i]);
+        pthread_create(&threads[i], NULL, sum_vector, &data[i]);
     }
 
     for (int i = 0; i < n_threads; ++i)
         pthread_join(threads[i], NULL);
 
     for (int i = 0; i < n_threads; i++) {
-        for (int j = data[i].inicio; j < data[i].fim; j++) {
-            c[j] = data[i].resultado[j - data[i].inicio];
+        for (int j = data[i].start; j < data[i].end; j++) {
+            c[j] = data[i].result[j - data[i].start];
         }
     }
 
-    //    +---------------------------------+
-    // ** | IMPORTANTE: avalia o resultado! | **
-    //    +---------------------------------+
+    // IMPORTANTE: avalia o resultado e liberar memória!
     avaliar(a, b, c, a_size);
-    
-
-    //Importante: libera memória
     free(a);
     free(b);
     free(c);
-
     return 0;
 }
