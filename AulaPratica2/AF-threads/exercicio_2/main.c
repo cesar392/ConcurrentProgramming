@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <stdio.h>
 #include <pthread.h>
+#include "helper.c"
 
 // Lê o conteúdo do arquivo filename e retorna um vetor E o tamanho dele
 // Se filename for da forma "gen:%d", gera um vetor aleatório com %d elementos
@@ -89,7 +90,7 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < n_threads; ++i) {
         data[i].a = a;
         data[i].b = b;
-        data[i].result = malloc(a_size*sizeof(double));
+        data[i].result = malloc(sizeof(c));
 
         data[i].start = current;
         current += chunk_size;
