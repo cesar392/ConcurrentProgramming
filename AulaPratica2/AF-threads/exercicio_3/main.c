@@ -21,6 +21,26 @@ double* load_vector(const char* filename, int* out_size);
 // que ambos a e b sejam vetores de tamanho size.
 void avaliar(double* a, double* b, int size, double prod_escalar);
 
+//-------------------------------------------------------------------------------------------
+
+typedef struct {
+    int start;
+    int end;
+    double* a;
+    double* b;
+    double* result;
+} data_to_sum_t;
+
+void* dot_product(void* arg){
+    data_to_sum_t *data = (data_to_sum_t*) arg;
+    for (int i = data->start; i < data->end; i++) {
+        data->result[i] = data->a[i] * data->b[i];
+    }
+    return NULL;
+}
+
+//-------------------------------------------------------------------------------------------
+
 int main(int argc, char* argv[]) {
     srand(time(NULL));
 
@@ -61,10 +81,55 @@ int main(int argc, char* argv[]) {
     }
 
     //Calcula produto escalar. Paralelize essa parte
-    double result = 0;
-    for (int i = 0; i < a_size; ++i) 
-        result += a[i] * b[i];
+    // double result = 0;
+    // for (int i = 0; i < a_size; ++i) 
+    //     result += a[i] * b[i];
+//-------------------------------------------------------------------------------------------
     
+    // Divide o trabalho entre as threads
+    if (n_threads > a_size) {
+        n_threads = a_size;
+    }
+    int chunk_size = (a_size + n_threads - 1) / n_threads;
+    int remainder = a_size % n_threads;
+    int current = 0;
+    double c[a_size];
+    double result;
+
+    // Cria lista de threads e estrutura de dados para somar
+    pthread_t threads[n_threads];
+    data_to_sum_t data[n_threads];
+
+    for (int i = 0; i < n_threads; ++i) {
+        data[i].a = a;
+        data[i].b = b;
+        data[i].result = c;
+
+        data[i].start = current;
+        current += chunk_size;
+        data[i].end = current;
+
+        // Adiciona o restante aos últimos threads
+        if (remainder && i >= n_threads - remainder) {
+            data[i].end++;
+            remainder--;
+        }
+
+        pthread_create(&threads[i], NULL, dot_product, &data[i]);
+    }
+
+    for (int i = 0; i < n_threads; ++i)
+        pthread_join(threads[i], NULL);
+
+    for (int i = 0; i < n_threads; i++) {
+        for (int j = data[i].start; j < data[i].end; j++) {
+            c[j] = data[i].result[j];
+            result += c[j];
+        }
+    }
+
+//-------------------------------------------------------------------------------------------
+
     //    +---------------------------------+
     // ** | IMPORTANTE: avalia o resultado! | **
     //    +---------------------------------+
