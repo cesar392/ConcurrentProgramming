@@ -4,7 +4,6 @@
 #include <sys/types.h>
 #include <stdio.h>
 #include <pthread.h>
-#include "helper.c"
 
 // Lê o conteúdo do arquivo filename e retorna um vetor E o tamanho dele
 // Se filename for da forma "gen:%d", gera um vetor aleatório com %d elementos
