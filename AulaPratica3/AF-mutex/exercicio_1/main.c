@@ -28,11 +28,11 @@ pthread_mutex_t mtx;
 
 void *incrementor(void *arg) {
     int n_loops = *(int *)arg;
-    pthread_mutex_lock(&mtx);
     for (int i = 0; i < n_loops; i++) {
+        pthread_mutex_lock(&mtx);
         contador_global += 1;
+        pthread_mutex_unlock(&mtx);
     }
-    pthread_mutex_unlock(&mtx);
     pthread_exit(NULL); // ou return NULL;
 }
 
