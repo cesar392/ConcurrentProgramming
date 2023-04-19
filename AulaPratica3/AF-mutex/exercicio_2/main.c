@@ -51,6 +51,7 @@ int main(int argc, char* argv[]) {
 
     //Crias as threads
     pthread_t threads[num_threads];
+    pthread_mutex_init(&matrix_mutex, NULL);
     for (int i = 0; i < num_threads; i++) {
         pthread_create(&threads[i], NULL, matrix_mult_worker, NULL);
     }
@@ -65,5 +66,6 @@ int main(int argc, char* argv[]) {
 
     //Libera a memória das matrizes
     liberar_matrizes();
+    pthread_mutex_destroy(&matrix_mutex);
     return 0;
 }
