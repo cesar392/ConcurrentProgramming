@@ -72,6 +72,6 @@ int main(int argc, char** argv) {
     // Faz o free para os resultados criados nas threads
     for (int i = 0; i < n_threads; ++i) 
         free(results[i]);
-    
+
     return 0;
 }
