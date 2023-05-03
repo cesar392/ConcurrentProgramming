@@ -110,7 +110,7 @@ int main(int argc, char **argv) {
 	/* Aloca os veículos. */
 	veiculo_t veiculos[total_veiculos];
 
-	ponte_inicializar(total_veiculos, veiculos_turno);
+	ponte_inicializar();
 
 	/* Cria os veículos. */
 	for (int i = 0; i < total_veiculos; i++) {
