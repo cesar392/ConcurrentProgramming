@@ -23,7 +23,7 @@ typedef struct {
 char cabeceiras[2][11] = { { "CONTINENTE" }, { "ILHA" } };
 int total_veiculos;
 int veiculos_turno;
-int carros_ponte = 0;
+int carros_ponte;
 sem_t sem_ilha, sem_continente;
 cabeceira_t sentido_travessia;
 // ToDo: Adicione aque quaisquer outras variávels globais necessárias.
@@ -32,7 +32,8 @@ cabeceira_t sentido_travessia;
 
 /* Inicializa a ponte. */
 void ponte_inicializar() {
-	sem_init(&sem_ilha, 0, 0); 
+	carros_ponte = 0;
+	sem_init(&sem_ilha, 0, 0);
 	sem_init(&sem_continente, 0, veiculos_turno);
 	sentido_travessia = ILHA;
 	/* Imprime direção inicial da travessia. NÃO REMOVER! */
@@ -45,41 +46,39 @@ void ponte_entrar(veiculo_t *v) {
 	switch (v->cabeceira)
 	{
 	case ILHA:
+		sem_wait(&sem_ilha);
 		if (sentido_travessia == CONTINENTE && carros_ponte < veiculos_turno) {
 			carros_ponte++;
-		} 
-		sem_wait(&sem_ilha);
+		}
 		break;
 	case CONTINENTE:
+		sem_wait(&sem_continente);
 		if (sentido_travessia == ILHA && carros_ponte < veiculos_turno) {
 			carros_ponte++;
 		}
-		sem_wait(&sem_continente);
 		break;
 	}
 }
 
 /* Função executada pelo veículo para SAIR de uma cabeceira da ponte. */
 void ponte_sair(veiculo_t *v) {
-	for (int i = 0; i < veiculos_turno; i ++) {
-		switch (v->cabeceira)
-		{
-		case ILHA:
-			if (sentido_travessia == ILHA) {
-				sem_post(&sem_ilha);
-				carros_ponte--;
-			}
-			break;
-		case CONTINENTE:
-			if (sentido_travessia == CONTINENTE) {
-				sem_post(&sem_continente);
-				carros_ponte--;
-			}
-			break;
-		}
-	}
-
+	carros_ponte--;
 	if (carros_ponte == 0) {
+		for (int i = 0; i < veiculos_turno; i ++) {
+			switch (v->cabeceira)
+			{
+			case ILHA:
+				if (sentido_travessia == ILHA) {
+					sem_post(&sem_ilha);
+				}
+				break;
+			case CONTINENTE:
+				if (sentido_travessia == CONTINENTE) {
+					sem_post(&sem_continente);
+				}
+				break;
+			}
+		}
 		if (sentido_travessia == ILHA) {
 			sentido_travessia = CONTINENTE;
 		} else {
