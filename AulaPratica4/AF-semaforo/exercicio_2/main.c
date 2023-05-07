@@ -28,7 +28,6 @@ int carros_ponte;
 sem_t sem_ilha, sem_continente;
 pthread_mutex_t mutex_carros_ponte;
 cabeceira_t sentido_travessia;
-// ToDo: Adicione aque quaisquer outras variávels globais necessárias.
 /* ---------------------------------------- */
 
 
@@ -44,6 +43,7 @@ void ponte_inicializar() {
 	fflush(stdout);
 }
 
+/* Incrementa ou decrementa o valor de carros_ponte protegito por um mutex. */
 void incrementa_carros_ponte(bool incrementa) {
 	pthread_mutex_lock(&mutex_carros_ponte);
 	if (incrementa) {
@@ -97,7 +97,6 @@ void ponte_sair(veiculo_t *v) {
 		} else {
 			sentido_travessia = ILHA;
 		}
-		/* Você deverá imprimir a nova direção da travessia quando for necessário! */	
 		printf("\n[PONTE] *** Novo sentido da travessia: %s -> %s. ***\n\n", cabeceiras[v->cabeceira], cabeceiras[!v->cabeceira]);
 		fflush(stdout);
 	}
