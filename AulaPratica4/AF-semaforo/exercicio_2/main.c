@@ -45,45 +45,41 @@ void ponte_entrar(veiculo_t *v) {
 	switch (v->cabeceira)
 	{
 	case ILHA:
-		if (sentido_travessia == CONTINENTE && carros_ponte <= veiculos_turno) {
-			sem_wait(&sem_ilha);
+		if (sentido_travessia == CONTINENTE && carros_ponte < veiculos_turno) {
 			carros_ponte++;
-		} else {
-			sem_wait(&sem_ilha);
-		}
+		} 
+		sem_wait(&sem_ilha);
 		break;
 	case CONTINENTE:
-		if (sentido_travessia == ILHA && carros_ponte <= veiculos_turno) {
-			sem_wait(&sem_continente);
+		if (sentido_travessia == ILHA && carros_ponte < veiculos_turno) {
 			carros_ponte++;
-		} else {
-			sem_wait(&sem_continente);
 		}
+		sem_wait(&sem_continente);
 		break;
 	}
 }
 
 /* Função executada pelo veículo para SAIR de uma cabeceira da ponte. */
 void ponte_sair(veiculo_t *v) {
-	int carros_ponte_atual = carros_ponte;
 	for (int i = 0; i < veiculos_turno; i ++) {
 		switch (v->cabeceira)
 		{
 		case ILHA:
-			if (sentido_travessia == CONTINENTE) {
+			if (sentido_travessia == ILHA) {
 				sem_post(&sem_ilha);
 				carros_ponte--;
 			}
 			break;
 		case CONTINENTE:
-			if (sentido_travessia == ILHA) {
+			if (sentido_travessia == CONTINENTE) {
 				sem_post(&sem_continente);
 				carros_ponte--;
 			}
 			break;
 		}
 	}
-	if (carros_ponte_atual == veiculos_turno) {
+
+	if (carros_ponte == 0) {
 		if (sentido_travessia == ILHA) {
 			sentido_travessia = CONTINENTE;
 		} else {
