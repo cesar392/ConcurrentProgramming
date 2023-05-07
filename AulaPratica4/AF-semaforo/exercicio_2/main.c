@@ -3,6 +3,7 @@
 #include <semaphore.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 /* ---------- Definições Globais. ---------- */
 #define TEMPO_BASE 1000000
@@ -25,6 +26,7 @@ int total_veiculos;
 int veiculos_turno;
 int carros_ponte;
 sem_t sem_ilha, sem_continente;
+pthread_mutex_t mutex_carros_ponte;
 cabeceira_t sentido_travessia;
 // ToDo: Adicione aque quaisquer outras variávels globais necessárias.
 /* ---------------------------------------- */
@@ -35,10 +37,21 @@ void ponte_inicializar() {
 	carros_ponte = 0;
 	sem_init(&sem_ilha, 0, 0);
 	sem_init(&sem_continente, 0, veiculos_turno);
+	pthread_mutex_init(&mutex_carros_ponte, NULL);
 	sentido_travessia = ILHA;
 	/* Imprime direção inicial da travessia. NÃO REMOVER! */
 	printf("\n[PONTE] *** Novo sentido da travessia: CONTINENTE -> ILHA. ***\n\n");
 	fflush(stdout);
+}
+
+void incrementa_carros_ponte(bool incrementa) {
+	pthread_mutex_lock(&mutex_carros_ponte);
+	if (incrementa) {
+		carros_ponte++;
+	} else {
+		carros_ponte--;
+	}
+	pthread_mutex_unlock(&mutex_carros_ponte);
 }
 
 /* Função executada pelo veículo para ENTRAR em uma cabeceira da ponte. */
@@ -48,13 +61,13 @@ void ponte_entrar(veiculo_t *v) {
 	case ILHA:
 		sem_wait(&sem_ilha);
 		if (sentido_travessia == CONTINENTE && carros_ponte < veiculos_turno) {
-			carros_ponte++;
+			incrementa_carros_ponte(true);
 		}
 		break;
 	case CONTINENTE:
 		sem_wait(&sem_continente);
 		if (sentido_travessia == ILHA && carros_ponte < veiculos_turno) {
-			carros_ponte++;
+			incrementa_carros_ponte(true);
 		}
 		break;
 	}
@@ -62,7 +75,7 @@ void ponte_entrar(veiculo_t *v) {
 
 /* Função executada pelo veículo para SAIR de uma cabeceira da ponte. */
 void ponte_sair(veiculo_t *v) {
-	carros_ponte--;
+	incrementa_carros_ponte(false);
 	if (carros_ponte == 0) {
 		for (int i = 0; i < veiculos_turno; i ++) {
 			switch (v->cabeceira)
