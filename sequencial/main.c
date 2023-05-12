@@ -1,8 +1,16 @@
 #include <stdio.h>
+#include <pthread.h>
 #include "gol.h"
 
 int main(int argc, char **argv)
 {
+    if(argc != 2) {
+        printf("Sintaxe: %s <numero de threads>\n", argv[0]);
+        return 1;
+    }
+    int n_threads = atoi(argv[1]);
+    pthread_t threads[n_threads];
+
     int size, steps;
     cell_t **prev, **next, **tmp;
     FILE *f;
