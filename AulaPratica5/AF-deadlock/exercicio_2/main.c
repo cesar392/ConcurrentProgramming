@@ -21,15 +21,25 @@ void transferir(conta_t *origem, conta_t *destino, double valor);
 // Thread que faz  transferências aleatórias. Definida em helper.c
 void* caixa_func(void *arg);
 
+conta_t* min(conta_t* a, conta_t* b) {
+    if (a->id < b->id)
+        return a;
+    else
+        return b;
+}
+
 // Versão thread-safe da função transferir_unsafe.
 void transferir(conta_t *origem, conta_t *destino, double valor) {
-    pthread_mutex_lock(&origem->mutex);
-    pthread_mutex_lock(&destino->mutex);
+    // Determinar a conta com o menor ID e bloquear seu mutex primeiro
+    conta_t *conta1 = min(origem, destino);
+    conta_t *conta2 = (conta1 == origem) ? destino : origem;
+    pthread_mutex_lock(&conta1->mutex);
+    pthread_mutex_lock(&conta2->mutex);
 
     transferir_unsafe(origem, destino, valor);
 
-    pthread_mutex_unlock(&origem->mutex);
-    pthread_mutex_unlock(&destino->mutex);
+    pthread_mutex_unlock(&conta2->mutex);
+    pthread_mutex_unlock(&conta1->mutex);
 }
 
 int main(int argc, char* argv[]) {
