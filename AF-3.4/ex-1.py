@@ -32,9 +32,23 @@ tam_buffer = 5
 lock = Lock()
 lugar_no_buffer = Condition(lock)
 item_no_buffer = Condition(lock)
-produtor = Thread(target=produtor) 
-consumidor = Thread(target=consumidor) 
-produtor.start()
-consumidor.start()
-produtor.join()
-consumidor.join() 
+
+produtores_threads = []
+consumidores_threads = []
+
+produtores_threads.append(Thread(target=produtor))
+produtores_threads.append(Thread(target=produtor))
+consumidores_threads.append(Thread(target=consumidor))
+consumidores_threads.append(Thread(target=consumidor))
+
+for produtor_thread in produtores_threads:
+    produtor_thread.start()
+
+for consumidor_thread in consumidores_threads:
+    consumidor_thread.start()
+
+for produtor_thread in produtores_threads:
+    produtor_thread.join()
+
+for consumidor_thread in consumidores_threads:
+    consumidor_thread.join()
